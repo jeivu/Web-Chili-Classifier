@@ -2,6 +2,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { format } from 'date-fns';
+import { id } from 'date-fns/locale'; // Import locale untuk Bahasa Indonesia
 
 // Komponen untuk fallback jika gambar tidak ditemukan
 const ImageFallback = ({ src, alt, ...props }: any) => {
@@ -27,7 +29,7 @@ export default function HistoryPage() {
   useEffect(() => {
     async function fetchHistory() {
       try {
-        const res = await fetch("http://localhost:5000/history");
+        const res = await fetch("https://web-production-98ac.up.railway.app/history");
         const data = await res.json();
         setHistory(data);
       } catch (err) {
@@ -42,7 +44,7 @@ export default function HistoryPage() {
   async function handleDelete(id: string | number) {
     setDeletingId(id);
     try {
-      const res = await fetch(`http://localhost:5000/history/${id}`, {
+      const res = await fetch(`https://web-production-98ac.up.railway.app/history/${id}`, {
         method: "DELETE",
       });
       if (!res.ok) {
@@ -97,14 +99,15 @@ export default function HistoryPage() {
             </div>
         </div>
 
-        {/* Daftar Riwayat dalam Bentuk Tabel */}
+                {/* Daftar Riwayat dalam Bentuk Tabel */}
         <div className="overflow-x-auto">
           <div className="inline-block min-w-full align-middle">
-            {/* Header Tabel */}
-            <div className="hidden sm:grid grid-cols-5 gap-4 border-b border-slate-200 pb-3 mb-3 text-left text-sm font-semibold text-slate-500">
+            {/* Header Tabel (Diubah ke 6 kolom) */}
+            <div className="hidden sm:grid grid-cols-6 gap-4 border-b border-slate-200 pb-3 mb-3 text-left text-sm font-semibold text-slate-500">
               <div className="pl-4">ID</div>
               <div className="text-center">Foto</div>
               <div className="text-center">Hasil</div>
+              <div className="text-center">Akurasi</div> {/* Kolom Baru */}
               <div className="text-center">Tanggal</div>
               <div className="text-center">Aksi</div>
             </div>
@@ -113,10 +116,11 @@ export default function HistoryPage() {
               {history.map((item, idx) => (
                 <div
                   key={item.id}
-                  className="flex flex-col sm:grid sm:grid-cols-5 items-start sm:items-center gap-2 sm:gap-4 bg-slate-50 hover:bg-slate-100 rounded-lg p-2 transition-colors"
+                  className="flex flex-col sm:grid sm:grid-cols-6 items-start sm:items-center gap-2 sm:gap-4 bg-slate-50 hover:bg-slate-100 rounded-lg p-2 transition-colors"
                 >
                   {/* Kolom ID (Nomor Urut) */}
                   <div className="w-full pl-4 text-slate-700 font-mono text-xs sm:text-sm">{idx + 1}</div>
+                  
                   {/* Kolom Foto */}
                   <div className="flex justify-center w-full">
                     <ImageFallback
@@ -127,12 +131,20 @@ export default function HistoryPage() {
                       className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-md border-2 border-white shadow-sm"
                     />
                   </div>
-                  {/* Kolom Hasil (Nama & Akurasi) */}
-                  <div className="flex flex-col items-start sm:items-center w-full">
-                    <span className="font-semibold text-slate-700 text-base sm:text-lg">{item.name} <span className="text-emerald-700 font-bold">{item.accuracy}%</span></span>
+
+                  {/* Kolom Hasil (HANYA NAMA) */}
+                  <div className="text-left sm:text-center w-full">
+                    <span className="font-semibold text-slate-700 text-base sm:text-lg">{item.name}</span>
                   </div>
+
+                  {/* Kolom Akurasi (DIPISAHKAN) */}
+                  <div className="text-left sm:text-center w-full">
+                    <span className="text-emerald-700 font-bold text-base sm:text-lg">{item.accuracy}%</span>
+                  </div>
+                  
                   {/* Kolom Tanggal */}
                   <div className="text-sm text-slate-500 text-left sm:text-center w-full">{formatDate(item.date)}</div>
+                  
                   {/* Kolom Aksi (Hapus) */}
                   <div className="flex justify-center w-full">
                     <button
@@ -180,16 +192,16 @@ export default function HistoryPage() {
   );
 }
 
-// Helper untuk format tanggal
+// Helper untuk format tanggal yang sudah diperbaiki
 function formatDate(dateString: string) {
   if (!dateString) return "-";
+  
+  // Buat objek Date dari string, JavaScript akan menganggapnya UTC
   const date = new Date(dateString);
   if (isNaN(date.getTime())) return dateString;
-  return date.toLocaleString("id-ID", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
+
+  // `format` dari date-fns akan otomatis mengonversi ke zona waktu browser
+  return format(date, "dd MMMM yyyy 'pukul' HH:mm", {
+    locale: id,
   });
 }

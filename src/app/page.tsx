@@ -69,7 +69,7 @@ export default function HomePage() {
     formData.append('file', fileToSend);
 
     try {
-      const response = await fetch('http://127.0.0.1:5000/predict', {
+      const response = await fetch('https://web-production-98ac.up.railway.app/predict', {
         method: 'POST',
         body: formData,
       });
@@ -121,7 +121,7 @@ export default function HomePage() {
       const pad = (n: number) => n.toString().padStart(2, '0');
       const dateStr = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:00`;
       saveForm.append('date', dateStr);
-      await fetch('http://localhost:5000/history', {
+      await fetch('https://web-production-98ac.up.railway.app/history', {
         method: 'POST',
         body: saveForm,
       });
